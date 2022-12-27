@@ -1,0 +1,21 @@
+# Compiled python code
+*.pyc
+
+# folder form Pycharm
+.idea/
+env
+venv
+
+.coverage
+
+# Folder visual studio code
+.vscode/
+
+# mypy
+.mypy_cache/
+
+# Python venv
+.env
+
+# WSL stuff
+*Zone.Identifier
