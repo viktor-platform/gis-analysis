@@ -55,7 +55,7 @@ def get_download(file_type: str, gdf: GeoDataFrame) -> Tuple[File, str]:
         with tempfile.TemporaryDirectory() as temp_dir:
             shape_name = "shapefile"
             file_name = shape_name + ".zip"
-            gdf.to_file(filename=os.path.join(temp_dir, shape_name + '.shp'), driver="ESRI Shapefile")
+            gdf.to_file(filename=os.path.join(temp_dir, shape_name + ".shp"), driver="ESRI Shapefile")
             shutil.make_archive(shape_name, "zip", temp_dir)
             with open(file_name, "rb") as fh:
                 buffer = BytesIO(fh.read())

@@ -21,12 +21,14 @@ from viktor import UserException
 from viktor import ViktorController
 from viktor.result import DownloadResult
 from viktor.result import SetParamsResult
-from viktor.views import DataGroup, WebView, WebResult, GeoJSONView, GeoJSONResult
+from viktor.views import DataGroup
 from viktor.views import DataItem
 from viktor.views import GeoJSONAndDataResult
 from viktor.views import GeoJSONAndDataView
 from viktor.views import InteractionEvent
 from viktor.views import MapLabel
+from viktor.views import WebResult
+from viktor.views import WebView
 
 from gis_functions import get_download
 from gis_functions import get_gdf
@@ -42,10 +44,7 @@ class Controller(ViktorController):
     @GeoJSONAndDataView("Map view", duration_guess=1)
     def get_geojson_view(self, params: Munch, **kwargs) -> GeoJSONAndDataResult:
         """Show all the map elements and data results"""
-        gdf = get_gdf(
-            params.shape_input.shapefile_upload,
-            params.shape_input.data_source
-        )
+        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source)
         geojson = json.loads(gdf.to_json())
 
         # Add labels to the map
@@ -100,10 +99,7 @@ class Controller(ViktorController):
 
     def download_geopackage(self, params: Munch, **kwargs) -> DownloadResult:
         """Download selected results to a geopackage"""
-        gdf = get_gdf(
-            params.shape_input.shapefile_upload,
-            params.shape_input.data_source
-        )
+        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source)
         if params.attributes.set_filter:
             gdf = set_filter_attributes(gdf, params.attributes)
 

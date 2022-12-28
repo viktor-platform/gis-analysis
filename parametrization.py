@@ -58,23 +58,28 @@ def _get_value_options(params: Munch, **kwargs) -> list:
 class Parametrization(ViktorParametrization):
     shape_input = Section("Input")
     shape_input.introduction_text = Text(
-        "Welcome to the Viktor sample-GIS app. In this application some basic GIS-practices "
-        "are demonstrated."
+        "Welcome to the Viktor sample-GIS app. In this application some basic GIS-practices " "are demonstrated."
     )
     shape_input.data_source = OptionField(
         "Data source", options=["Sample data", "Custom data"], variant="radio-inline", default="Sample data"
     )
-    shape_input.sample_data_text = Text("Some sample data is loaded to play around with. Additionally, it is possible to upload your "
+    shape_input.sample_data_text = Text(
+        "Some sample data is loaded to play around with. Additionally, it is possible to upload your "
         "own GIS-data (shapefile, geojson, geopackage and dxf are supported). When uploading a shapefile, make sure it is zipped to a "
-        "single file.", visible=IsEqual("Sample data", Lookup("shape_input.data_source")))
+        "single file.",
+    )
     shape_input.line_break = LineBreak()
     shape_input.shapefile_upload = FileField(
         "Upload file", description="Upload GIS-data", visible=IsEqual("Custom data", Lookup("shape_input.data_source"))
     )
     shape_input.attribute_results = HiddenField("attribute_results", "attribute_results")
     attributes = Section("Filter")
-    attributes.attribute_field_filter_text = Text("Filter visible shapes on by attribute value")
-    attributes.field_name = OptionField("Field names", options=_get_field_name_options)
+    attributes.attribute_field_filter_text = Text("Filter visible shapes by attribute value")
+    attributes.field_name = OptionField(
+        "Field names",
+        options=_get_field_name_options,
+        description="Field names are imported automatically from the attribute table",
+    )
     attributes.line_break = LineBreak()
     attributes.filter_type = OptionField(
         "Filter type", options=["Unique value", "Range"], variant="radio-inline", default="Unique value"
@@ -85,15 +90,24 @@ class Parametrization(ViktorParametrization):
         visible=IsEqual("Unique value", Lookup("attributes.filter_type")),
     )
     attributes.attribute_value = AutocompleteField(
-        "Values", options=_get_value_options, visible=IsEqual("Unique value", Lookup("attributes.filter_type"))
+        "Values",
+        options=_get_value_options,
+        visible=IsEqual("Unique value", Lookup("attributes.filter_type")),
+        description="Unique values are imported automatically from the attribute table, based on the selected field "
+        "name",
+    )
+    attributes.attribute_field_filter_text3 = Text(
+        "Set value options for selected field name and filter by selected range.",
+        visible=IsEqual("Range", Lookup("attributes.filter_type")),
     )
     attributes.minimum_value = NumberField("Minimum value", visible=IsEqual("Range", Lookup("attributes.filter_type")))
     attributes.maximum_value = NumberField("Maximum value", visible=IsEqual("Range", Lookup("attributes.filter_type")))
-    attributes.set_filter = BooleanField("Set filter")
+    attributes.set_filter = BooleanField("Set filter", description="Only show shapes that are within the set filter")
     compare = Section("Compare by ranking")
     compare.text = Text(
         "Compare different features with eachother by ranking. First select the attribute field with "
-        "the names of the features. Then, select the value for which the features should be ranked."
+        "the names of the features. Then, select the value for which the features should be ranked. Finally, select "
+        "features on the map to compare."
     )
     compare.field_name = OptionField("Field names", options=_get_field_name_options)
     compare.selected_value = OptionField("Compare for values", options=_get_field_name_options)
@@ -103,6 +117,10 @@ class Parametrization(ViktorParametrization):
         interaction=MapSelectInteraction("get_geojson_view", min_select=1, max_select=10),
     )
     download = Section("Download")
+    download.text = Text(
+        "Download the GIS-data to any of the output formats as shown below. When a filter is applied,"
+        " only the filtered data is downloaded."
+    )
     download.output_format_options = OptionField(
         "Output format",
         options=[
@@ -113,8 +131,11 @@ class Parametrization(ViktorParametrization):
         ],
         default="shapefile",
     )
-    download.output_crs = OptionField("CRS output", options=
-    [OptionListElement("4326", "WGS84 (4326)"), OptionListElement("28992", "RD NEW (28992)"), "Other"], default=4326)
+    download.output_crs = OptionField(
+        "CRS output",
+        options=[OptionListElement("4326", "WGS84 (4326)"), OptionListElement("28992", "RD NEW (28992)"), "Other"],
+        default=4326,
+    )
     download.output_crs_other = NumberField(
         "CRS output (other)",
         description="Enter any EPSG coordinate system here.",
