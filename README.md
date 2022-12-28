@@ -25,7 +25,7 @@ Some sample data it pre-loaded to play around with by default, so it is possible
 
 ### Step 2: Set filter
 
-Activate the "set filter" toggle to apply the filter and only visualize the shapes on the map, for which its values are within the 
+Activate the filter and only visualize the shapes on the map, for which its values are within the 
 filter.
 
 First choose a field name. The field names are automatically imported from the 
@@ -35,7 +35,7 @@ attribute table. Then, choose a filter type. Two options are available, unique a
 
 ![](resources/set-filter.gif)
 
-### Step 3: Compare attributes
+### Step 3: Compare by ranking
 
 Within VIKTOR it is also possible to interact with the map, which is demonstrated here.
 
