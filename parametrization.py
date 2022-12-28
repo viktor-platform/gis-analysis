@@ -13,12 +13,15 @@ SOFTWARE.
 """
 
 from munch import Munch
+from viktor.parametrization import And
 from viktor.parametrization import AutocompleteField
 from viktor.parametrization import BooleanField
 from viktor.parametrization import DownloadButton
 from viktor.parametrization import FileField
 from viktor.parametrization import HiddenField
 from viktor.parametrization import IsEqual
+from viktor.parametrization import IsNotNone
+from viktor.parametrization import IsTrue
 from viktor.parametrization import LineBreak
 from viktor.parametrization import Lookup
 from viktor.parametrization import MapSelectInteraction
@@ -58,7 +61,7 @@ def _get_value_options(params: Munch, **kwargs) -> list:
 class Parametrization(ViktorParametrization):
     shape_input = Section("Input")
     shape_input.introduction_text = Text(
-        "Welcome to the Viktor sample-GIS app. In this application some basic GIS-practices " "are demonstrated."
+        "Welcome to the VIKTOR sample-GIS app. In this application is shown how to do basic GIS-analysis in VIKTOR."
     )
     shape_input.data_source = OptionField(
         "Data source", options=["Sample data", "Custom data"], variant="radio-inline", default="Sample data"
@@ -74,51 +77,71 @@ class Parametrization(ViktorParametrization):
     )
     shape_input.attribute_results = HiddenField("attribute_results", "attribute_results")
     attributes = Section("Filter")
-    attributes.attribute_field_filter_text = Text("Filter visible shapes by attribute value")
+    attributes.attribute_field_filter_text = Text(
+        "Filter shapes by its attribute value, obtained from the attribute table. "
+        "When the filter is activated, only the shapes are shown for which its attribute values are within the filter."
+    )
+    attributes.set_filter = BooleanField("Activate filter")
+    attributes.line_break3 = LineBreak()
     attributes.field_name = OptionField(
         "Field names",
         options=_get_field_name_options,
-        description="Field names are imported automatically from the attribute table",
+        description="Field names are imported automatically from the attribute table.",
+        visible=IsTrue(Lookup("attributes.set_filter")),
+        default="Currency",
     )
     attributes.line_break = LineBreak()
     attributes.filter_type = OptionField(
-        "Filter type", options=["Unique value", "Range"], variant="radio-inline", default="Unique value"
+        "Filter type",
+        options=["Unique value", "Range"],
+        variant="radio-inline",
+        default="Unique value",
+        visible=IsTrue(Lookup("attributes.set_filter")),
+        description="**Unique values:** all unique values from the selected field name are imported  \n  "
+                    "**Range:** Set a minimum and maximum value to filter numerical values"
     )
     attributes.line_break2 = LineBreak()
-    attributes.attribute_field_filter_text2 = Text(
-        "Set value options for selected field name and filter by selected value.",
-        visible=IsEqual("Unique value", Lookup("attributes.filter_type")),
-    )
     attributes.attribute_value = AutocompleteField(
-        "Values",
+        "Value",
         options=_get_value_options,
-        visible=IsEqual("Unique value", Lookup("attributes.filter_type")),
+        visible=And(IsEqual("Unique value", Lookup("attributes.filter_type")), IsTrue(Lookup("attributes.set_filter"))),
         description="Unique values are imported automatically from the attribute table, based on the selected field "
         "name",
+        default="Euro",
     )
     attributes.attribute_field_filter_text3 = Text(
         "Set value options for selected field name and filter by selected range.",
-        visible=IsEqual("Range", Lookup("attributes.filter_type")),
+        visible=And(IsEqual("Range", Lookup("attributes.filter_type")), IsTrue(Lookup("attributes.set_filter"))),
     )
     attributes.minimum_value = NumberField("Minimum value", visible=IsEqual("Range", Lookup("attributes.filter_type")))
     attributes.maximum_value = NumberField("Maximum value", visible=IsEqual("Range", Lookup("attributes.filter_type")))
-    attributes.set_filter = BooleanField("Set filter", description="Only show shapes that are within the set filter")
     compare = Section("Compare by ranking")
     compare.text = Text(
-        "Compare different features with eachother by ranking. First select the attribute field with "
-        "the names of the features. Then, select the value for which the features should be ranked. Finally, select "
-        "features on the map to compare."
+        "Compare different shapes with eachother by ranking. First select the attribute field with "
+        "the names of the shapes. Then, select the value for which the shapes should be ranked. Finally, select "
+        "shapes on the map to compare."
     )
-    compare.field_name = OptionField("Field names", options=_get_field_name_options)
-    compare.selected_value = OptionField("Compare for values", options=_get_field_name_options)
     compare.compare_features = SetParamsButton(
-        "Select features to compare",
+        "Select shapes to compare",
         "compare_attributes",
         interaction=MapSelectInteraction("get_geojson_view", min_select=1, max_select=10),
     )
+    compare.linebreak = LineBreak()
+    compare.field_name = OptionField(
+        "Field names",
+        options=_get_field_name_options,
+        default="Country",
+        visible=IsNotNone(Lookup("attribute_results")),
+    )
+    compare.selected_value = OptionField(
+        "Compare for values",
+        options=_get_field_name_options,
+        default="Population",
+        visible=IsNotNone(Lookup("attribute_results")),
+    )
     download = Section("Download")
     download.text = Text(
-        "Download the GIS-data to any of the output formats as shown below. When a filter is applied,"
+        "Download the GIS-data to any of the output formats as shown below. When the filter is activated,"
         " only the filtered data is downloaded."
     )
     download.output_format_options = OptionField(

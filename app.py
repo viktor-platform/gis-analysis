@@ -38,7 +38,7 @@ from parametrization import Parametrization
 
 class Controller(ViktorController):
     label = "GIS-app"
-    parametrization = Parametrization
+    parametrization = Parametrization(width=30)
     viktor_enforce_field_constraints = True
 
     @GeoJSONAndDataView("Map view", duration_guess=1)
@@ -74,6 +74,8 @@ class Controller(ViktorController):
                 raise UserException(
                     "Selection from sample data is still in memory. Please restart the app to clear " "the database."
                 )
+            if params.compare.field_name == params.compare.selected_value:
+                raise UserException("Field names and compare for values cannot be the same. Please change this value.")
             gdf_combined = gdf_selected[[params.compare.field_name, params.compare.selected_value]].reset_index()
             gdf_combined = gdf_combined.sort_values(by=[params.compare.selected_value], ascending=False)
             attribute_results = DataGroup(
@@ -87,7 +89,7 @@ class Controller(ViktorController):
                 ],
             )
         else:  # Create an empty placeholder for results
-            attribute_results = DataGroup(DataItem("Please select a feature to show attributes", ""))
+            attribute_results = DataGroup(DataItem("Compare by ranking: Please select shapes to compare", ""))
 
         return GeoJSONAndDataResult(geojson, attribute_results, labels)
 
