@@ -78,15 +78,15 @@ class Parametrization(ViktorParametrization):
     shape_input.attribute_results = HiddenField("attribute_results", "attribute_results")
     attributes = Section("Filter")
     attributes.attribute_field_filter_text = Text(
-        "Filter shapes by its attribute value, obtained from the attribute table. "
-        "When the filter is activated, only the shapes are shown for which its attribute values are within the filter."
+        "Filter shapes by its value, obtained from the attribute table. "
+        "When the filter is activated, only the shapes are shown for which its values are within the filter."
     )
     attributes.set_filter = BooleanField("Activate filter")
     attributes.line_break3 = LineBreak()
     attributes.field_name = OptionField(
         "Field names",
         options=_get_field_name_options,
-        description="Field names are imported automatically from the attribute table.",
+        description="Field name determines which values can be selected",
         visible=IsTrue(Lookup("attributes.set_filter")),
         default="Currency",
     )
@@ -97,16 +97,15 @@ class Parametrization(ViktorParametrization):
         variant="radio-inline",
         default="Unique value",
         visible=IsTrue(Lookup("attributes.set_filter")),
-        description="**Unique values:** all unique values from the selected field name are imported  \n  "
-                    "**Range:** Set a minimum and maximum value to filter numerical values"
+        description="**Unique values:** Set filter by uniques value  \n  "
+        "**Range:** Set filter by range. Only works on numerical values.",
     )
     attributes.line_break2 = LineBreak()
     attributes.attribute_value = AutocompleteField(
         "Value",
         options=_get_value_options,
         visible=And(IsEqual("Unique value", Lookup("attributes.filter_type")), IsTrue(Lookup("attributes.set_filter"))),
-        description="Unique values are imported automatically from the attribute table, based on the selected field "
-        "name",
+        description="Shapes are filtered on selected value",
         default="Euro",
     )
     attributes.attribute_field_filter_text3 = Text(
@@ -117,9 +116,10 @@ class Parametrization(ViktorParametrization):
     attributes.maximum_value = NumberField("Maximum value", visible=IsEqual("Range", Lookup("attributes.filter_type")))
     compare = Section("Compare by ranking")
     compare.text = Text(
-        "Compare different shapes with eachother by ranking. First select the attribute field with "
-        "the names of the shapes. Then, select the value for which the shapes should be ranked. Finally, select "
-        "shapes on the map to compare."
+        "1. Select shapes on the map to compare.  \n "
+        "2. Then, select the field name with the names of the shapes.  \n "
+        "3. Finally, select the value for which the shapes should be compared.  \n "
+        "The result is shown on the right-hand side of the screen, ranked from high to low."
     )
     compare.compare_features = SetParamsButton(
         "Select shapes to compare",
@@ -158,6 +158,7 @@ class Parametrization(ViktorParametrization):
         "CRS output",
         options=[OptionListElement("4326", "WGS84 (4326)"), OptionListElement("28992", "RD NEW (28992)"), "Other"],
         default=4326,
+        description="Specify the coordinate system",
     )
     download.output_crs_other = NumberField(
         "CRS output (other)",

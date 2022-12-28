@@ -25,22 +25,26 @@ Some sample data it pre-loaded to play around with by default, so it is possible
 
 ### Step 2: Set filter
 
-Set a filter on the attribute data. First choose a field name. The field names are automatically imported from the 
+Activate the "set filter" toggle to apply the filter and only visualize the shapes on the map, for which its values are within the 
+filter.
+
+First choose a field name. The field names are automatically imported from the 
 attribute table. Then, choose a filter type. Two options are available, unique and range.
 - Unique values: all unique values from the selected field name are imported
 - Range: Set a minimum and maximum value to filter numerical values
-
-Activate the "set filter" toggle to apply the filter and only visualize the geometry on the map, which is within the 
-filter.
 
 ![](resources/set-filter.gif)
 
 ### Step 3: Compare attributes
 
-Within Viktor it is also possible to interact with the map, which is demonstrated here. First select a field name and a
- value to compare with. Then, click on "Select features to compare". The user is asked to select features on the map to 
-compare. When the selection is finished, the results are shown in the data tab on the right-hand side and are ranked 
+Within VIKTOR it is also possible to interact with the map, which is demonstrated here.
+
+Click on "Select features to compare". The user is asked to select features on the map to 
+compare. Then, select a field name and a value to compare with. 
+
+When the selection is finished, the results are shown in the data tab on the right-hand side and are ranked 
 from high to low.
+
 
 ![](resources/compare-ranking.gif)
 
