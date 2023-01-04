@@ -11,7 +11,6 @@ SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 import os
 import shutil
 import tempfile
@@ -23,6 +22,7 @@ import geopandas as gpd
 from geopandas import GeoDataFrame
 from munch import Munch
 from viktor import File
+from viktor import UserException
 from viktor.api_v1 import FileResource
 
 
@@ -85,6 +85,10 @@ def set_filter_attributes(gdf: GeoDataFrame, attributes: Munch) -> GeoDataFrame:
     if attributes.filter_type == "Unique value":
         gdf = gdf[gdf[attributes.field_name] == attributes.attribute_value]
     elif attributes.filter_type == "Range":
-        gdf = gdf[gdf[attributes.field_name] >= attributes.minimum_value]
-        gdf = gdf[gdf[attributes.field_name] <= attributes.maximum_value]
+        try:
+            gdf = gdf[gdf[attributes.field_name] >= attributes.minimum_value]
+            gdf = gdf[gdf[attributes.field_name] <= attributes.maximum_value]
+        except TypeError:  # range only works for numerical values
+            raise UserException("Select by range is only possible for numerical values. Please select Unique value "
+                                "instead.")
     return gdf
