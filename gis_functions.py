@@ -22,7 +22,7 @@ import geopandas as gpd
 from geopandas import GeoDataFrame
 from munch import Munch
 from viktor import File
-from viktor import UserException
+from viktor import UserError
 from viktor.api_v1 import FileResource
 
 
@@ -89,6 +89,6 @@ def set_filter_attributes(gdf: GeoDataFrame, attributes: Munch) -> GeoDataFrame:
             gdf = gdf[gdf[attributes.field_name] >= attributes.minimum_value]
             gdf = gdf[gdf[attributes.field_name] <= attributes.maximum_value]
         except TypeError:  # range only works for numerical values
-            raise UserException("Filter by range is only possible for numerical values. Please select 'Unique value' "
+            raise UserError("Filter by range is only possible for numerical values. Please select 'Unique value' "
                                 "instead.")
     return gdf
