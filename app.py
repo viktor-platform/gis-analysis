@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Optional
 
 from munch import Munch
-from viktor import UserException
+from viktor import UserError
 from viktor import ViktorController
 from viktor.result import DownloadResult
 from viktor.result import SetParamsResult
@@ -71,11 +71,11 @@ class Controller(ViktorController):
             try:
                 gdf_selected = gdf.loc[selected_features_indeces]
             except KeyError:
-                raise UserException(
+                raise UserError(
                     "Selection from sample data is still in memory. Please restart the app to clear " "the database."
                 )
             if params.compare.field_name == params.compare.selected_value:
-                raise UserException("Field names and compare for values cannot be the same. Please change this value.")
+                raise UserError("Field names and compare for values cannot be the same. Please change this value.")
             gdf_combined = gdf_selected[[params.compare.field_name, params.compare.selected_value]].reset_index()
             gdf_combined = gdf_combined.sort_values(by=[params.compare.selected_value], ascending=False)
             attribute_results = DataGroup(
