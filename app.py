@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Optional
 
 from munch import Munch
-from viktor import UserException
+from viktor import UserError
 from viktor import ViktorController
 from viktor.result import DownloadResult
 from viktor.result import SetParamsResult
@@ -44,7 +44,7 @@ class Controller(ViktorController):
     @GeoJSONAndDataView("Map view", duration_guess=1)
     def get_geojson_view(self, params: Munch, **kwargs) -> GeoJSONAndDataResult:
         """Show all the map elements and data results"""
-        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source)
+        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
         geojson = json.loads(gdf.to_json())
 
         # Add labels to the map
@@ -71,11 +71,11 @@ class Controller(ViktorController):
             try:
                 gdf_selected = gdf.loc[selected_features_indeces]
             except KeyError:
-                raise UserException(
+                raise UserError(
                     "Selection from sample data is still in memory. Please restart the app to clear " "the database."
                 )
             if params.compare.field_name == params.compare.selected_value:
-                raise UserException("Field names and compare for values cannot be the same. Please change this value.")
+                raise UserError("Field names and compare for values cannot be the same. Please change this value.")
             gdf_combined = gdf_selected[[params.compare.field_name, params.compare.selected_value]].reset_index()
             gdf_combined = gdf_combined.sort_values(by=[params.compare.selected_value], ascending=False)
             attribute_results = DataGroup(
@@ -101,7 +101,7 @@ class Controller(ViktorController):
 
     def download_geopackage(self, params: Munch, **kwargs) -> DownloadResult:
         """Download selected results to a geopackage"""
-        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source)
+        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
         if params.attributes.set_filter:
             gdf = set_filter_attributes(gdf, params.attributes)
 

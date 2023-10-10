@@ -22,21 +22,25 @@ import geopandas as gpd
 from geopandas import GeoDataFrame
 from munch import Munch
 from viktor import File
-from viktor import UserException
+from viktor import UserError
 from viktor.api_v1 import FileResource
 
 
-def get_gdf(upload_file: FileResource, data_source: str) -> GeoDataFrame:
+def get_gdf(upload_file: FileResource, data_source: str, styling: Munch) -> GeoDataFrame:
     """Creates a geodataframe. Also adds attribute table as click-event and sets the color."""
     if data_source == "Custom data" and upload_file:  # Custom data
         shapefile_file = upload_file.file
         data_IO = BytesIO(shapefile_file.getvalue_binary())
         gdf = gpd.read_file(data_IO)
         gdf = gdf.to_crs("EPSG:4326")
+        field_names = gdf.columns.drop(["geometry"])
     else:  # Sample data
         gdf = gpd.read_file(Path(__file__).parent / "language_per_country_europe.zip", crs=4326)
-    field_names = gdf.columns.drop(["geometry"])
-    gdf["fill"] = "#9ef542"  # Set color
+        gdf["title"] = gdf["Country"]
+        field_names = gdf.columns.drop(["geometry", "title"])
+    gdf["fill"] = styling.color.hex  # Set color
+    gdf["fill-opacity"] = styling.opacity
+    gdf["stroke-width"] = styling.line_width
 
     # Add attribute table to the geodataframe as a string, so it can be added to the map as a click-event
     gdf_description = ""
@@ -89,6 +93,7 @@ def set_filter_attributes(gdf: GeoDataFrame, attributes: Munch) -> GeoDataFrame:
             gdf = gdf[gdf[attributes.field_name] >= attributes.minimum_value]
             gdf = gdf[gdf[attributes.field_name] <= attributes.maximum_value]
         except TypeError:  # range only works for numerical values
-            raise UserException("Filter by range is only possible for numerical values. Please select 'Unique value' "
-                                "instead.")
+            raise UserError(
+                "Filter by range is only possible for numerical values. Please select 'Unique value' " "instead."
+            )
     return gdf

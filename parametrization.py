@@ -13,7 +13,7 @@ SOFTWARE.
 """
 
 from munch import Munch
-from viktor.parametrization import And
+from viktor.parametrization import And, ColorField
 from viktor.parametrization import AutocompleteField
 from viktor.parametrization import BooleanField
 from viktor.parametrization import DownloadButton
@@ -34,13 +34,16 @@ from viktor.parametrization import Text
 from viktor.parametrization import ViktorParametrization
 
 from gis_functions import get_gdf
+from viktor import Color
 
 
 def _get_field_name_options(params: Munch, **kwargs) -> list:
     """Returns all attribute field names"""
     try:
-        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source)
-        field_name_options = gdf.columns.drop(["geometry", "fill", "description"])
+        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
+        field_name_options = gdf.columns.drop(
+            ["geometry", "fill", "description", "fill", "fill-opacity", "stroke-width"]
+        )
         field_name_options = field_name_options.dropna().tolist()
     except KeyError:  # Create an empty placeholder
         field_name_options = [" "]
@@ -50,7 +53,7 @@ def _get_field_name_options(params: Munch, **kwargs) -> list:
 def _get_value_options(params: Munch, **kwargs) -> list:
     """Return all unique values for a selected attribute field name"""
     try:
-        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source)
+        gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
         value_options = gdf[params.attributes.field_name]
         attribute_value_options = value_options.dropna().unique().tolist()
     except KeyError:  # Create an empty placeholder
@@ -139,6 +142,10 @@ class Parametrization(ViktorParametrization):
         default="Population",
         visible=IsNotNone(Lookup("attribute_results")),
     )
+    styling = Section("Styling")
+    styling.opacity = NumberField("Opacity", variant="slider", min=0, max=1, step=0.1, default=0.5)
+    styling.color = ColorField("Color", default=Color.from_hex("#0837ff"))
+    styling.line_width = NumberField("Line width", variant="slider", min=0, max=5, default=1)
     download = Section("Download")
     download.text = Text(
         "Download the GIS-data to any of the output formats as shown below. When the filter is activated,"
