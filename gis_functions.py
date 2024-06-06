@@ -1,4 +1,4 @@
-"""Copyright (c) 2022 VIKTOR B.V.
+"""Copyright (c) 2024 VIKTOR B.V.
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
 rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
@@ -20,13 +20,12 @@ from typing import Tuple
 
 import geopandas as gpd
 from geopandas import GeoDataFrame
-from munch import Munch
 from viktor import File
 from viktor import UserError
 from viktor.api_v1 import FileResource
 
 
-def get_gdf(upload_file: FileResource, data_source: str, styling: Munch) -> GeoDataFrame:
+def get_gdf(upload_file: FileResource, data_source: str, styling) -> GeoDataFrame:
     """Creates a geodataframe. Also adds attribute table as click-event and sets the color."""
     if data_source == "Custom data" and upload_file:  # Custom data
         shapefile_file = upload_file.file
@@ -52,9 +51,7 @@ def get_gdf(upload_file: FileResource, data_source: str, styling: Munch) -> GeoD
 
 
 def get_download(file_type: str, gdf: GeoDataFrame) -> Tuple[File, str]:
-    """Convert a GeoDataFrame to a Vikor-File, which can be downloaded. Available output formats are: .shp, .gpkg,
-    .dxf, .json
-    """
+    """Convert a GeoDataFrame to a downloadable File. Available output formats are: .shp, .gpkg, .dxf, .json"""
     if file_type == "shapefile":
         with tempfile.TemporaryDirectory() as temp_dir:
             shape_name = "shapefile"
@@ -66,25 +63,27 @@ def get_download(file_type: str, gdf: GeoDataFrame) -> Tuple[File, str]:
                 download_file = File.from_data(buffer.getvalue())
             shutil.rmtree(temp_dir)
         os.remove(file_name)
-    if file_type == "geopackage":
+    elif file_type == "geopackage":
         bytes_buffer = BytesIO()
         gdf.to_file(bytes_buffer, driver="GPKG", layer="geopackage")
         download_file = File.from_data(bytes_buffer.getvalue())
         file_name = "geopackage.gpkg"
-    if file_type == "autocad":
+    elif file_type == "autocad":
         bytes_buffer = BytesIO()
         gdf.geometry.to_file(bytes_buffer, driver="DXF")
         download_file = File.from_data(bytes_buffer.getvalue())
         file_name = "autocad.dxf"
-    if file_type == "geojson":
+    elif file_type == "geojson":
         bytes_buffer = BytesIO()
         gdf.to_file(bytes_buffer, driver="GeoJSON")
         download_file = File.from_data(bytes_buffer.getvalue())
         file_name = "geojson.json"
+    else:
+        raise ValueError(f"file_type '{file_type}' not implemented")
     return download_file, file_name
 
 
-def set_filter_attributes(gdf: GeoDataFrame, attributes: Munch) -> GeoDataFrame:
+def set_filter_attributes(gdf: GeoDataFrame, attributes) -> GeoDataFrame:
     """Add filter on attributes in GeoDataFrame."""
     if attributes.filter_type == "Unique value":
         gdf = gdf[gdf[attributes.field_name] == attributes.attribute_value]
@@ -94,6 +93,6 @@ def set_filter_attributes(gdf: GeoDataFrame, attributes: Munch) -> GeoDataFrame:
             gdf = gdf[gdf[attributes.field_name] <= attributes.maximum_value]
         except TypeError:  # range only works for numerical values
             raise UserError(
-                "Filter by range is only possible for numerical values. Please select 'Unique value' " "instead."
+                "Filter by range is only possible for numerical values. Please select 'Unique value' instead."
             )
     return gdf

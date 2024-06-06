@@ -1,4 +1,4 @@
-"""Copyright (c) 2022 VIKTOR B.V.
+"""Copyright (c) 2024 VIKTOR B.V.
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
 rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
@@ -12,32 +12,34 @@ CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFT
 SOFTWARE.
 """
 
-from munch import Munch
-from viktor.parametrization import And, ColorField
-from viktor.parametrization import AutocompleteField
-from viktor.parametrization import BooleanField
-from viktor.parametrization import DownloadButton
-from viktor.parametrization import FileField
-from viktor.parametrization import HiddenField
-from viktor.parametrization import IsEqual
-from viktor.parametrization import IsNotNone
-from viktor.parametrization import IsTrue
-from viktor.parametrization import LineBreak
-from viktor.parametrization import Lookup
-from viktor.parametrization import MapSelectInteraction
-from viktor.parametrization import NumberField
-from viktor.parametrization import OptionField
-from viktor.parametrization import OptionListElement
-from viktor.parametrization import Section
-from viktor.parametrization import SetParamsButton
-from viktor.parametrization import Text
-from viktor.parametrization import ViktorParametrization
+from viktor import Color
+from viktor.parametrization import (
+    And,
+    ColorField,
+    AutocompleteField,
+    BooleanField,
+    DownloadButton,
+    FileField,
+    HiddenField,
+    IsEqual,
+    IsNotNone,
+    IsTrue,
+    LineBreak,
+    Lookup,
+    MapSelectInteraction,
+    NumberField,
+    OptionField,
+    OptionListElement,
+    Section,
+    SetParamsButton,
+    Text,
+    ViktorParametrization,
+)
 
 from gis_functions import get_gdf
-from viktor import Color
 
 
-def _get_field_name_options(params: Munch, **kwargs) -> list:
+def _get_field_name_options(params, **kwargs) -> list:
     """Returns all attribute field names"""
     try:
         gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
@@ -50,7 +52,7 @@ def _get_field_name_options(params: Munch, **kwargs) -> list:
     return field_name_options
 
 
-def _get_value_options(params: Munch, **kwargs) -> list:
+def _get_value_options(params, **kwargs) -> list:
     """Return all unique values for a selected attribute field name"""
     try:
         gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
@@ -71,8 +73,8 @@ class Parametrization(ViktorParametrization):
     )
     shape_input.sample_data_text = Text(
         "Some sample data is loaded to play around with. Additionally, it is possible to upload your "
-        "own GIS-data (shapefile, geojson, geopackage and dxf are supported). When uploading a shapefile, make sure it is zipped to a "
-        "single file.",
+        "own GIS-data (shapefile, geojson, geopackage and dxf are supported). When uploading a shapefile, "
+        "make sure it is zipped to a single file.",
     )
     shape_input.line_break = LineBreak()
     shape_input.shapefile_upload = FileField(
@@ -126,7 +128,7 @@ class Parametrization(ViktorParametrization):
     )
     compare.compare_features = SetParamsButton(
         "Select shapes to compare",
-        "compare_attributes",
+        method="compare_attributes",
         interaction=MapSelectInteraction("get_geojson_view", min_select=1, max_select=10),
     )
     compare.linebreak = LineBreak()
@@ -173,4 +175,4 @@ class Parametrization(ViktorParametrization):
         visible=IsEqual("Other", Lookup("download.output_crs")),
     )
     download.linebreak = LineBreak()
-    download.download_shapefile = DownloadButton("Download", "download_geopackage")
+    download.download_shapefile = DownloadButton("Download", method="download_geopackage")
