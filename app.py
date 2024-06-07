@@ -1,4 +1,4 @@
-"""Copyright (c) 2022 VIKTOR B.V.
+"""Copyright (c) 2024 VIKTOR B.V.
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
 rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
@@ -13,10 +13,8 @@ SOFTWARE.
 """
 
 import json
-from pathlib import Path
 from typing import Optional
 
-from munch import Munch
 from viktor import UserError
 from viktor import ViktorController
 from viktor.result import DownloadResult
@@ -27,8 +25,6 @@ from viktor.views import GeoJSONAndDataResult
 from viktor.views import GeoJSONAndDataView
 from viktor.views import InteractionEvent
 from viktor.views import MapLabel
-from viktor.views import WebResult
-from viktor.views import WebView
 
 from gis_functions import get_download
 from gis_functions import get_gdf
@@ -39,10 +35,9 @@ from parametrization import Parametrization
 class Controller(ViktorController):
     label = "GIS-app"
     parametrization = Parametrization(width=30)
-    viktor_enforce_field_constraints = True
 
     @GeoJSONAndDataView("Map view", duration_guess=1)
-    def get_geojson_view(self, params: Munch, **kwargs) -> GeoJSONAndDataResult:
+    def get_geojson_view(self, params, **kwargs) -> GeoJSONAndDataResult:
         """Show all the map elements and data results"""
         gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
         geojson = json.loads(gdf.to_json())
@@ -67,9 +62,9 @@ class Controller(ViktorController):
 
         # Get and compare results for selected features
         if params.attribute_results:
-            selected_features_indeces = params.attribute_results
+            selected_features = params.attribute_results
             try:
-                gdf_selected = gdf.loc[selected_features_indeces]
+                gdf_selected = gdf.loc[selected_features]
             except KeyError:
                 raise UserError(
                     "Selection from sample data is still in memory. Please restart the app to clear " "the database."
@@ -96,17 +91,17 @@ class Controller(ViktorController):
     def compare_attributes(self, event: Optional[InteractionEvent], **kwargs) -> SetParamsResult:
         """Returns the index of the selected features"""
         if event:
-            selected_features_indeces = [int(value) for value in event.value]
-            return SetParamsResult({"attribute_results": selected_features_indeces})
+            selected_features = [int(value) for value in event.value]
+            return SetParamsResult({"attribute_results": selected_features})
 
-    def download_geopackage(self, params: Munch, **kwargs) -> DownloadResult:
+    def download_geopackage(self, params, **kwargs) -> DownloadResult:
         """Download selected results to a geopackage"""
         gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
         if params.attributes.set_filter:
             gdf = set_filter_attributes(gdf, params.attributes)
 
         gdf.drop(columns=["description", "fill"], inplace=True)
-        if gdf.crs.to_epsg() != params.download.output_crs:  # Check if output CRS is different than input CRS
+        if gdf.crs.to_epsg() != params.download.output_crs:  # Check if output CRS is different from input CRS
             if params.download.output_crs == "Other":  # Use any EPSG coordinate system
                 gdf = gdf.to_crs(params.download.output_crs_other)
             else:  # Use one of the predefined coordinate systems
@@ -114,11 +109,3 @@ class Controller(ViktorController):
         download_file, file_name = get_download(params.download.output_format_options, gdf)
 
         return DownloadResult(download_file, file_name)
-
-    @WebView("What's next?", duration_guess=1)
-    def final_step(self, params, **kwargs):
-        """Initiates the process of rendering the last step."""
-        html_path = Path(__file__).parent / "final_step.html"
-        with html_path.open() as f:
-            html_string = f.read()
-        return WebResult(html=html_string)

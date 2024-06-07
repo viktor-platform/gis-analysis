@@ -1,2 +1,2 @@
-viktor==14.6.0
-geopandas==0.14.0
+viktor==14.10.0
+geopandas==0.14.4

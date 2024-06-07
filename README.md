@@ -1,7 +1,5 @@
-![](https://img.shields.io/badge/SDK-v14.0.0-blue) <Please check version is the same as specified in requirements.txt>
-
-# GIS analysis in Viktor
-This sample app demonstrates how to do a GIS-analysis in Viktor.
+# GIS analysis
+This sample app demonstrates how to do a GIS-analysis.
 
 The goal of this app is to demonstrate some common GIS analyses using Viktor. This app was developed using an 
 open-source library (`geopandas`), which provides a powerful toolkit for GIS-analysis. Using Viktor, complex analysis 
