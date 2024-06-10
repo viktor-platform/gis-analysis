@@ -36,7 +36,7 @@ class Controller(ViktorController):
     label = "GIS-app"
     parametrization = Parametrization(width=30)
 
-    @GeoJSONAndDataView("Map view", duration_guess=1)
+    @GeoJSONAndDataView("Map", duration_guess=1)
     def get_geojson_view(self, params, **kwargs) -> GeoJSONAndDataResult:
         """Show all the map elements and data results"""
         gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)

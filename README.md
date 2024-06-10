@@ -7,8 +7,8 @@ becomes easy to perform, accessible through the browser.
 
 In this application the following functionalities are demonstrated:
 - Uploading and visualizing custom GIS-data (shapefile, geopackage, geojson)
-- Add filters to attribute table
-- MapView interaction, analysis on selected features
+- Apply filters
+- Interact with data on the map
 - Download data as any GIS-datatype (shapefile, geopackage, geojson, autocad)
 
 A published version of this app is available on [demo.viktor.ai](https://demo.viktor.ai/public/gis-analysis).
@@ -19,7 +19,7 @@ When uploading a shapefile, make sure it is zipped into a single file.
 
 Some sample data it pre-loaded to play around with by default, so it is possible to skip this step.
 
-![](resources/upload-file.gif)
+![](.viktor-template/upload-file.gif)
 
 ### Step 2: Set filter
 
@@ -31,7 +31,7 @@ attribute table. Then, choose a filter type. Two options are available, unique a
 - Unique values: all unique values from the selected field name are imported
 - Range: Set a minimum and maximum value to filter numerical values
 
-![](resources/set-filter.gif)
+![](.viktor-template/set-filter.gif)
 
 ### Step 3: Compare by ranking
 
@@ -44,7 +44,7 @@ When the selection is finished, the results are shown in the data tab on the rig
 from high to low.
 
 
-![](resources/compare-ranking.gif)
+![](.viktor-template/compare-ranking.gif)
 
 ### Step 4: Download file
 
@@ -57,7 +57,4 @@ Finally it is possible to export the features to different types of GIS-datatype
 
 Additionally, it is possible to project the features to any coordinate system (ESPG).
 
-![](resources/download.gif)
-
-## App structure
-This is an editor-only app type.
+![](.viktor-template/download.gif)

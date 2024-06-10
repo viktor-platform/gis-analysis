@@ -6,6 +6,6 @@ becomes easy to perform, accessible through the browser.
 
 In this application the following functionalities are demonstrated:
 - Uploading and visualizing custom GIS-data (shapefile, geopackage, geojson)
-- Add filters to attribute table
-- MapView interaction, analysis on selected features
+- Apply filters
+- Interact with data on the map
 - Download data as any GIS-datatype (shapefile, geopackage, geojson, autocad)
