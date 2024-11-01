@@ -15,16 +15,7 @@ SOFTWARE.
 import json
 from typing import Optional
 
-from viktor import UserError
-from viktor import ViktorController
-from viktor.result import DownloadResult
-from viktor.result import SetParamsResult
-from viktor.views import DataGroup
-from viktor.views import DataItem
-from viktor.views import GeoJSONAndDataResult
-from viktor.views import GeoJSONAndDataView
-from viktor.views import InteractionEvent
-from viktor.views import MapLabel
+import viktor as vkt
 
 from gis_functions import get_download
 from gis_functions import get_gdf
@@ -32,12 +23,12 @@ from gis_functions import set_filter_attributes
 from parametrization import Parametrization
 
 
-class Controller(ViktorController):
+class Controller(vkt.ViktorController):
     label = "GIS-app"
     parametrization = Parametrization(width=30)
 
-    @GeoJSONAndDataView("Map", duration_guess=1)
-    def get_geojson_view(self, params, **kwargs) -> GeoJSONAndDataResult:
+    @vkt.GeoJSONAndDataView("Map", duration_guess=1)
+    def get_geojson_view(self, params, **kwargs) -> vkt.GeoJSONAndDataResult:
         """Show all the map elements and data results"""
         gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
         geojson = json.loads(gdf.to_json())
@@ -47,13 +38,13 @@ class Controller(ViktorController):
             gdf_labels = gdf.dropna().copy()
             gdf_labels["label_geometry"] = gdf_labels.representative_point()
             labels = [
-                MapLabel(point.y, point.x, str(gdf_labels.labels.iloc[index]), 3)
+                vkt.MapLabel(point.y, point.x, str(gdf_labels.labels.iloc[index]), 3)
                 for index, point in enumerate(gdf_labels.label_geometry)
             ]
         else:  # Create an empty placeholder for the labels
             gdf_labels = gdf.copy()
             gdf_labels["label_geometry"] = gdf_labels.representative_point()
-            labels = [MapLabel(gdf_labels.label_geometry[0].x, gdf_labels.label_geometry[0].x, " ", 20)]
+            labels = [vkt.MapLabel(gdf_labels.label_geometry[0].x, gdf_labels.label_geometry[0].x, " ", 20)]
 
         # Set filter
         if params.attributes.set_filter:
@@ -66,17 +57,17 @@ class Controller(ViktorController):
             try:
                 gdf_selected = gdf.loc[selected_features]
             except KeyError:
-                raise UserError(
+                raise vkt.UserError(
                     "Selection from sample data is still in memory. Please restart the app to clear " "the database."
                 )
             if params.compare.field_name == params.compare.selected_value:
-                raise UserError("Field names and compare for values cannot be the same. Please change this value.")
+                raise vkt.UserError("Field names and compare for values cannot be the same. Please change this value.")
             gdf_combined = gdf_selected[[params.compare.field_name, params.compare.selected_value]].reset_index()
             gdf_combined = gdf_combined.sort_values(by=[params.compare.selected_value], ascending=False)
-            attribute_results = DataGroup(
-                DataItem(f"**{params.compare.field_name}**", f"**{params.compare.selected_value}**"),
+            attribute_results = vkt.DataGroup(
+                vkt.DataItem(f"**{params.compare.field_name}**", f"**{params.compare.selected_value}**"),
                 *[
-                    DataItem(str(field_name), str(value))
+                    vkt.DataItem(str(field_name), str(value))
                     for field_name, value in zip(
                         gdf_combined[params.compare.field_name].tolist(),
                         gdf_combined[params.compare.selected_value].tolist(),
@@ -84,17 +75,17 @@ class Controller(ViktorController):
                 ],
             )
         else:  # Create an empty placeholder for results
-            attribute_results = DataGroup(DataItem("Compare by ranking: Please select shapes to compare", ""))
+            attribute_results = vkt.DataGroup(vkt.DataItem("Compare by ranking: Please select shapes to compare", ""))
 
-        return GeoJSONAndDataResult(geojson, attribute_results, labels)
+        return vkt.GeoJSONAndDataResult(geojson, attribute_results, labels)
 
-    def compare_attributes(self, event: Optional[InteractionEvent], **kwargs) -> SetParamsResult:
+    def compare_attributes(self, event: Optional[vkt.InteractionEvent], **kwargs) -> vkt.SetParamsResult:
         """Returns the index of the selected features"""
         if event:
             selected_features = [int(value) for value in event.value]
-            return SetParamsResult({"attribute_results": selected_features})
+            return vkt.SetParamsResult({"attribute_results": selected_features})
 
-    def download_geopackage(self, params, **kwargs) -> DownloadResult:
+    def download_geopackage(self, params, **kwargs) -> vkt.DownloadResult:
         """Download selected results to a geopackage"""
         gdf = get_gdf(params.shape_input.shapefile_upload, params.shape_input.data_source, params.styling)
         if params.attributes.set_filter:
@@ -108,4 +99,4 @@ class Controller(ViktorController):
                 gdf = gdf.to_crs(params.download.output_crs)
         download_file, file_name = get_download(params.download.output_format_options, gdf)
 
-        return DownloadResult(download_file, file_name)
+        return vkt.DownloadResult(download_file, file_name)

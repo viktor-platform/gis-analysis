@@ -20,12 +20,10 @@ from typing import Tuple
 
 import geopandas as gpd
 from geopandas import GeoDataFrame
-from viktor import File
-from viktor import UserError
-from viktor.api_v1 import FileResource
+import viktor as vkt
 
 
-def get_gdf(upload_file: FileResource, data_source: str, styling) -> GeoDataFrame:
+def get_gdf(upload_file: vkt.api_v1.FileResource, data_source: str, styling) -> GeoDataFrame:
     """Creates a geodataframe. Also adds attribute table as click-event and sets the color."""
     if data_source == "Custom data" and upload_file:  # Custom data
         shapefile_file = upload_file.file
@@ -50,7 +48,7 @@ def get_gdf(upload_file: FileResource, data_source: str, styling) -> GeoDataFram
     return gdf
 
 
-def get_download(file_type: str, gdf: GeoDataFrame) -> Tuple[File, str]:
+def get_download(file_type: str, gdf: GeoDataFrame) -> Tuple[vkt.File, str]:
     """Convert a GeoDataFrame to a downloadable File. Available output formats are: .shp, .gpkg, .dxf, .json"""
     if file_type == "shapefile":
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -60,23 +58,23 @@ def get_download(file_type: str, gdf: GeoDataFrame) -> Tuple[File, str]:
             shutil.make_archive(shape_name, "zip", temp_dir)
             with open(file_name, "rb") as fh:
                 buffer = BytesIO(fh.read())
-                download_file = File.from_data(buffer.getvalue())
+                download_file = vkt.File.from_data(buffer.getvalue())
             shutil.rmtree(temp_dir)
         os.remove(file_name)
     elif file_type == "geopackage":
         bytes_buffer = BytesIO()
         gdf.to_file(bytes_buffer, driver="GPKG", layer="geopackage")
-        download_file = File.from_data(bytes_buffer.getvalue())
+        download_file = vkt.File.from_data(bytes_buffer.getvalue())
         file_name = "geopackage.gpkg"
     elif file_type == "autocad":
         bytes_buffer = BytesIO()
         gdf.geometry.to_file(bytes_buffer, driver="DXF")
-        download_file = File.from_data(bytes_buffer.getvalue())
+        download_file = vkt.File.from_data(bytes_buffer.getvalue())
         file_name = "autocad.dxf"
     elif file_type == "geojson":
         bytes_buffer = BytesIO()
         gdf.to_file(bytes_buffer, driver="GeoJSON")
-        download_file = File.from_data(bytes_buffer.getvalue())
+        download_file = vkt.File.from_data(bytes_buffer.getvalue())
         file_name = "geojson.json"
     else:
         raise ValueError(f"file_type '{file_type}' not implemented")
@@ -92,7 +90,7 @@ def set_filter_attributes(gdf: GeoDataFrame, attributes) -> GeoDataFrame:
             gdf = gdf[gdf[attributes.field_name] >= attributes.minimum_value]
             gdf = gdf[gdf[attributes.field_name] <= attributes.maximum_value]
         except TypeError:  # range only works for numerical values
-            raise UserError(
+            raise vkt.UserError(
                 "Filter by range is only possible for numerical values. Please select 'Unique value' instead."
             )
     return gdf
